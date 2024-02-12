@@ -805,6 +805,7 @@ dependencies = [
  "chrono",
  "clap",
  "serde",
+ "serde_json",
  "tokio",
 ]
 

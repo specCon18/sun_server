@@ -1,41 +1,45 @@
 use axum::{
     routing::get,
-    Router,
+    Router, Json, response::IntoResponse,
 };
-use chrono::prelude::*;
+use chrono::{DateTime, Utc, Timelike, Datelike, Duration};
+use clap::Parser;
+use serde_json::json;
+
+#[cfg(test)]
+mod tests;
 
 struct Time {
     hour: u32,
     minute: u32,
-    second: u32
+    second: u32,
 }
 
 impl Time {
-    fn new() -> Time {
-        let now = Utc::now();
-        // Extract hour, minute, and second directly using chrono's functions
-        let hour = now.hour();
-        let minute = now.minute();
-        let second = now.second();
-
-        Time { hour, minute, second }
+    fn new(offset_hours: i32) -> Self {
+        let now = Utc::now() + Duration::hours(offset_hours.into());
+        Time {
+            hour: now.hour(),
+            minute: now.minute(),
+            second: now.second(),
+        }
     }
 }
 
 struct Date {
     day: u32,
     month: u32,
-    year: i32
+    year: i32,
 }
 
 impl Date {
-    fn new() -> Date {
-        let now = Utc::now();
-        let day = now.day();
-        let month = now.month();
-        let year = now.year();
-
-        Date { day,month,year}
+    fn new(offset_hours: i32) -> Self {
+        let now = Utc::now() + Duration::hours(offset_hours.into());
+        Date {
+            day: now.day(),
+            month: now.month(),
+            year: now.year(),
+        }
     }
 }
 
@@ -51,67 +55,91 @@ struct Cli {
 async fn main() {
     let cli = Cli::parse();
 
-    // Access the offset from the CLI
-    let offset_value = cli.offset;
-    // build our application with a single route
     let app = Router::new()
-        .route("/", get(schedule));
+        .route("/", get(schedule(cli.offset)));
 
-    // run our app with hyper, listening globally on port 3000
-    let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
-    axum::serve(listener, app).await.unwrap();
+    let addr = "0.0.0.0:3000".parse().unwrap();
+    println!("Listening on {}", addr);
+    axum::Server::bind(&addr)
+        .serve(app.into_make_service())
+        .await
+        .unwrap();
 }
 
-async fn schedule() -> String {
-    let utc: DateTime<Utc> = Utc::now();
-    let human = utc.to_rfc3339();
-    // Extract the date part from the RFC 3339 formatted string
-    // RFC 3339 format: YYYY-MM-DDTHH:MM:SS+00:00, so we take the first 10 characters
-    let date_only = &human[..10]; // This slices the string to get the first 10 characters (YYYY-MM-DD)
-    date_only.to_string() // Convert the slice back into a String to return
+fn schedule(offset: i32) -> impl Fn() -> Json<Value> + Clone {
+    move || {
+        let date = Date::new(offset);
+        let season = get_season(&date);
+        let dst = is_dst(&date);
+        let curve = select_curve(&season, dst);
+        Json(curve)
+    }
 }
 
-fn get_season(date:Date) -> String {
-    let season = match date.month {
+fn get_season(date: &Date) -> String {
+    match date.month {
         12 | 1 | 2 => "winter",
         3 | 4 | 5 => "spring",
         6 | 7 | 8 => "summer",
         9 | 10 | 11 => "fall",
-        _ => "Improper Month"
-    };
-    return season.to_string()
+        _ => unreachable!(),
+    }.to_string()
 }
-fn select_curve(season: &str, is_dst:bool) {
-    //curves spring = 1 summer = 2 fall = 3 winter = 4
-    let current_season:u16 = match season {
-        "spring" => 1,
-        "summer" => 2,
-        "fall" => 3,
-        "winter" => 4,
-        _ => 999
-    };
-    let dst:u16 = match is_dst {
-        true => 10,
-        false => 20
-    };
-    let curve_selector = current_season+dst;
-    let curve:Vec<u32> = match curve_selector {
-        11 => vec![],
-        12 => vec![],
-        13 => vec![],
-        14 => vec![],
-        21 => vec![],
-        23 => vec![],
-        _ => vec![],
-    };
+
+fn is_dst(date: &Date) -> bool {
+    (date.month > 3 && date.month < 11) || (date.month == 3 && date.day >= 14) || (date.month == 11 && date.day < 7)
 }
-fn is_dst(date:Date) -> bool {
-    if (date.month > 3 || (date.month == 3 && date.day >= 14)) && (date.month < 11 || (date.month == 11 && date.day < 7)){
-        true
-    }
-    else {
-        false
-    }
+
+fn select_curve(season: &str, is_dst: bool) -> Value {
+    // Example JSON for winter, implement similarly for other seasons
+    let curve_json = match (season, is_dst) {
+        ("winter", _) => json!({
+            "morning": {"temp": [2000,3000], "brightness": [10,60], "time": [6,8]},
+            "daytime": {"temp": [5000,6500], "brightness": [60,100], "time": [8,16]},
+            "evening": {"temp": [4000,3000], "brightness": [60,30], "time": [16,20]},
+            "night": {"temp": [2700,1800], "brightness": [30,5], "time": [20,22]},
+            "nocturn": {"temp": [1800,1800], "brightness": [5,5], "time": [22,6]},
+        }),
+        ("spring", _) => json!({
+            "morning": {"temp": [2500,3500],"brightness": [20,70],"time": [6,8]},
+            "daytime" : {"temp": [5500,6500],"brightness": [70,100],"time": [8,18]},
+            "evening": {"temp": [4000,3000],"brightness": [70,40],"time": [18,20]},
+            "night": {"temp": [2700,2000],"brightness": [40,10],"time": [20,22]},
+            "nocturn": {"temp": [2000,2000],"brightness": [10,10],"time": [22,6]}
+        }),
+        ("spring", true) => json!({
+            "morning": {"temp": [2500,3500],"brightness": [20,70],"time": [7,9]},
+            "daytime" : {"temp": [5500,6500],"brightness": [70,100],"time": [9,19]},
+            "evening": {"temp": [4000,3000],"brightness": [70,40],"time": [19,21]},
+            "night": {"temp": [2700,2000],"brightness": [40,10],"time": [21,23]},
+            "nocturn": {"temp": [2000,2000],"brightness": [10,10],"time": [23,7]}
+        }),
+        ("summer", true) => json!({
+            "morning": {"temp": [3000,5000],"brightness": [30,100],"time": [7,9]},
+            "daytime" : {"temp": [6500,6500],"brightness": [100,100],"time": [9,19]},
+            "evening": {"temp": [4000,3000],"brightness": [100,50],"time": [19,22]},
+            "night": {"temp": [2700,2200],"brightness": [50,5],"time": [22,23]},
+            "nocturn": {"temp": [2200,2200],"brightness": [5,5],"time": [23,7]}
+        }),
+        ("fall", _) => json!({
+            "morning": {"temp": [2500, 3500],"brightness": [20, 70],"time": [6, 8]},
+            "daytime": {"temp": [5500, 6500],"brightness": [70, 100],"time": [8, 18]},
+            "evening": {"temp": [4000, 3000],"brightness": [70, 30],"time": [18, 20]},
+            "night": {"temp": [2700, 2000],"brightness": [30, 10],"time": [20, 22]},
+            "nocturn": {"temp": [2000,2000],"brightness": [10,10],"time": [22,6]}
+        }),
+
+        ("fall", true) => json!({
+            "morning": {"temp": [2500, 3500],"brightness": [20, 70],"time": [7,9]},
+            "daytime": {"temp": [5500, 6500],"brightness": [70, 100],"time": [9,19]},
+            "evening": {"temp": [4000, 3000],"brightness": [70, 30],"time": [19,21]},
+            "night": {"temp": [2700, 2000],"brightness": [30, 10],"time": [21,23]},
+            "nocturn": {"temp": [2000,2000],"brightness": [10,10],"time": [23,7]}
+        }),
+        _ => json!({}),
+    };
+
+    curve_json
 }
 
 fn handle_timezone(time:Time, offset:i8) -> Time{
