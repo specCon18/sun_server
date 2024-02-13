@@ -12,10 +12,6 @@
       pkgs = forAllSystems (system:
         import nixpkgs {
           inherit system;
-          #v this can be adjusted to read args passed without impure later
-          config = { allowUnfreePredicate = pkg: builtins.elem (nixpkgs.lib.getName pkg) [
-              "unrar"
-            ];
           };
         }
       );
