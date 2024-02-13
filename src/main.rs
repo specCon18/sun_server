@@ -60,7 +60,7 @@ fn select_curve(season: &str, is_dst: bool) -> Json<Value> {
             "night": {"temp": [2700,1800], "brightness": [30,5], "time": [20,22]},
             "nocturn": {"temp": [1800,1800], "brightness": [5,5], "time": [22,6]},
         }),
-        ("spring", _) => json!({
+        ("spring", false) => json!({
             "morning": {"temp": [2500,3500],"brightness": [20,70],"time": [6,8]},
             "daytime" : {"temp": [5500,6500],"brightness": [70,100],"time": [8,18]},
             "evening": {"temp": [4000,3000],"brightness": [70,40],"time": [18,20]},
@@ -81,7 +81,7 @@ fn select_curve(season: &str, is_dst: bool) -> Json<Value> {
             "night": {"temp": [2700,2200],"brightness": [50,5],"time": [22,23]},
             "nocturn": {"temp": [2200,2200],"brightness": [5,5],"time": [23,7]}
         }),
-        ("fall", _) => json!({
+        ("fall", false) => json!({
             "morning": {"temp": [2500, 3500],"brightness": [20, 70],"time": [6, 8]},
             "daytime": {"temp": [5500, 6500],"brightness": [70, 100],"time": [8, 18]},
             "evening": {"temp": [4000, 3000],"brightness": [70, 30],"time": [18, 20]},

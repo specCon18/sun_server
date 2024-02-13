@@ -2,7 +2,7 @@
     use serde_json::json;
     #[test]
     fn test_spring_no_dst_curve() {
-        let date = Date { day: 15, month: 4, year: 2023 }; // Spring date without DST
+        let date = Date { day: 1, month: 3}; // Spring date without DST
         let season = get_season(&date);
         let dst = is_dst(&date);
         let curve = select_curve(&season, dst);
@@ -15,13 +15,12 @@
             "night": {"temp": [2700,2000],"brightness": [40,10],"time": [20,22]},
             "nocturn": {"temp": [2000,2000],"brightness": [10,10],"time": [22,6]}
         });
-
         assert_eq!(curve, expected_curve);
     }
 
     #[test]
     fn test_spring_with_dst_curve() {
-        let date = Date { day: 15, month: 4, year: 2023 }; // Spring date with DST
+        let date = Date { day: 15, month: 4 }; // Spring date with DST
         let season = get_season(&date);
         let dst = true; // Assuming DST is true for this test
         let curve = select_curve(&season, dst);
@@ -40,7 +39,7 @@
     
     #[test]
     fn test_fall_no_dst_curve() {
-        let date = Date { day: 10, month: 11, year: 2023 }; // Spring date without DST
+        let date = Date { day: 10, month: 11 }; // Spring date without DST
         let season = get_season(&date);
         let dst = is_dst(&date);
         let curve = select_curve(&season, dst);
@@ -59,7 +58,7 @@
 
     #[test]
     fn test_fall_with_dst_curve() {
-        let date = Date { day: 4, month: 11, year: 2023 }; // Spring date with DST
+        let date = Date { day: 10, month: 10 }; // Spring date with DST
         let season = get_season(&date);
         let dst = true; // Assuming DST is true for this test
         let curve = select_curve(&season, dst);
@@ -79,7 +78,7 @@
 
     #[test]
     fn test_summer_curve() {
-        let date = Date { day: 4, month: 11, year: 2023 }; // Spring date with DST
+        let date = Date { day: 7, month: 7 }; // Spring date with DST
         let season = get_season(&date);
         let dst = true; // Assuming DST is true for this test
         let curve = select_curve(&season, dst);
@@ -99,7 +98,7 @@
 
     #[test]
     fn test_winter_curve() {
-        let date = Date { day: 4, month: 11, year: 2023 }; // Spring date with DST
+        let date = Date { day: 1, month: 1}; // Spring date with DST
         let season = get_season(&date);
         let dst = true; // Assuming DST is true for this test
         let curve = select_curve(&season, dst);
