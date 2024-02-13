@@ -12,7 +12,6 @@
       pkgs = forAllSystems (system:
         import nixpkgs {
           inherit system;
-          };
         }
       );
     in {
@@ -23,6 +22,10 @@
         default = pkgs.${system}.callPackage ./nix/devshell.nix { };
       });
       nixConfig = {
+      };
+      nixosModules = rec {
+        default = sunServer;
+        sunServer = import ./nixosModules/sunserver;
       };
     };
 }
