@@ -2,7 +2,7 @@
 let
     # resources used to make
     # https://nixos.wiki/wiki/Extend_NixOS
-    inherit (lib) mkIf mkOption mkEnableOption types;
+    inherit (lib) mkIf mkOption mkEnableOption optionalAttrs types;
     cfg = config.services.sunServer;
 in{
     options = {
