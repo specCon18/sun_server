@@ -25,7 +25,7 @@
       };
       nixosModules = rec {
         default = sunServer;
-        sunServer = import ./nixosModules/sunserver;
+        sunServer = import ./nixosModules/sunServer;
       };
     };
 }
