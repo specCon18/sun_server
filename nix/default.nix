@@ -2,7 +2,7 @@
 
 pkgs.rustPlatform.buildRustPackage rec {
   pname = "sun_server";
-  version = "0.9.0";
+  version = "1.0.0";
   cargoLock.lockFile = ../Cargo.lock;
   src = pkgs.lib.cleanSource ../.;
   buildInputs = [ ];
