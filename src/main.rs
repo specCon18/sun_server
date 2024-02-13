@@ -1,33 +1,14 @@
 use axum::{routing::get,Router, Json,};
-use chrono::{Utc, Timelike, Datelike, Duration};
-use clap::Parser;
+use chrono::{Utc, Datelike, Duration};
 use serde_json::json;
 use serde_json::Value;
 
 #[cfg(test)]
 mod tests;
 
-struct Time {
-    hour: u32,
-    minute: u32,
-    second: u32,
-}
-
-impl Time {
-    fn new(offset:i32) -> Self {
-        let now = Utc::now() + Duration::hours(offset.into());
-        Time {
-            hour: now.hour(),
-            minute: now.minute(),
-            second: now.second(),
-        }
-    }
-}
-
 struct Date {
     day: u32,
     month: u32,
-    year: i32,
 }
 
 impl Date {
@@ -36,7 +17,6 @@ impl Date {
         Date {
             day: now.day(),
             month: now.month(),
-            year: now.year(),
         }
     }
 }
@@ -120,19 +100,4 @@ fn select_curve(season: &str, is_dst: bool) -> Json<Value> {
     };
 
     Json(curve_json)
-}
-
-fn handle_timezone(time:Time, offset:i8) -> Time{
-    let mut hour:u32 = time.hour;
-    let minute:u32 = time.minute;
-    let second:u32 = time.second;
-    if offset > 0 {
-        hour = hour + offset as u32;
-    }
-    else {
-        let offset = offset.abs() as u32;
-        hour = hour - offset;
-    }
-    let tz_adjusted = Time {hour,minute,second};
-    return tz_adjusted
 }

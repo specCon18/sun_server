@@ -1,12 +1,12 @@
     use super::*;
-
+    use serde_json::json;
     #[test]
     fn test_spring_no_dst_curve() {
         let date = Date { day: 15, month: 4, year: 2023 }; // Spring date without DST
         let season = get_season(&date);
         let dst = is_dst(&date);
         let curve = select_curve(&season, dst);
-
+        let curve = json!(*curve);
         // Define the expected spring curve without DST
         let expected_curve = json!({
             "morning": {"temp": [2500,3500],"brightness": [20,70],"time": [6,8]},
@@ -25,7 +25,7 @@
         let season = get_season(&date);
         let dst = true; // Assuming DST is true for this test
         let curve = select_curve(&season, dst);
-
+        let curve = json!(*curve);
         // Define the expected spring curve with DST
         let expected_curve = json!({
             "morning": {"temp": [2500,3500],"brightness": [20,70],"time": [7,9]},
@@ -44,7 +44,7 @@
         let season = get_season(&date);
         let dst = is_dst(&date);
         let curve = select_curve(&season, dst);
-
+        let curve = json!(*curve);
         // Define the expected spring curve without DST
         let expected_curve = json!({
             "morning": {"temp": [2500, 3500],"brightness": [20, 70],"time": [6, 8]},
@@ -63,6 +63,7 @@
         let season = get_season(&date);
         let dst = true; // Assuming DST is true for this test
         let curve = select_curve(&season, dst);
+        let curve = json!(*curve);
 
         // Define the expected spring curve with DST
         let expected_curve = json!({
@@ -82,6 +83,7 @@
         let season = get_season(&date);
         let dst = true; // Assuming DST is true for this test
         let curve = select_curve(&season, dst);
+        let curve = json!(*curve);
 
         // Define the expected spring curve with DST
         let expected_curve = json!({
@@ -101,6 +103,7 @@
         let season = get_season(&date);
         let dst = true; // Assuming DST is true for this test
         let curve = select_curve(&season, dst);
+        let curve = json!(*curve);
 
         // Define the expected spring curve with DST
         let expected_curve = json!({
