@@ -44,11 +44,11 @@ in{
         users.users.${cfg.user} =
             optionalAttrs (cfg.user == "sunserver") {
               isSystemUser = true;
-            #   group = cfg.group;
+              group = cfg.user;
               home = cfg.dataDir;
               createHome = true;
             };
-
+        users.groups.${cfg.user} = {};
         systemd.services.sunServer = {
           # this service is "wanted by" (see systemd man pages, or other tutorials) the system 
           # level that allows multiple users to login and interact with the machine non-graphically 
