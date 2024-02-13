@@ -8,14 +8,7 @@ in{
     options = {
         services.sunServer = {
             enable = mkEnableOption "Enables sunServer";
-            package = mkOption {
-              type = types.package;
-              defaultText = literalExpression "inputs.sun_server.packages.x86_64-linux.default";
-              example = literalExpression "inputs.sun_server.packages.x86_64-linux.default";
-              description = lib.mdDoc ''
-                A server to serve lighting curves to Home Assistant.
-              '';
-            };
+            package = mkPackageOption pkgs "sunServer" { };
             user = mkOption { #TODO look at upstream for example
                 type = with types; str;
                 default = "sunserver";

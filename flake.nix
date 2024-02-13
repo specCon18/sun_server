@@ -18,8 +18,9 @@
       packages = forAllSystems (system: {
         default = pkgs.${system}.callPackage ./nix/default.nix { };
       });
-      devShells = forAllSystems (system: {
-        default = pkgs.${system}.callPackage ./nix/devshell.nix { };
+      devShells = forAllSystems (system: rec {
+        default = sunServer;
+        sunServer = pkgs.${system}.callPackage ./nix/devshell.nix { };
       });
       nixConfig = {
       };
