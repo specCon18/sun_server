@@ -1,0 +1,21 @@
+@nix { "action": "setPhase", "phase": "unpackPhase" }
+Running phase: unpackPhase
+unpacking source archive /nix/store/sjbgrb1vpfbcfp6iacjp5sp1wp7rj23l-source
+source root is source
+Executing cargoSetupPostUnpackHook
+Finished cargoSetupPostUnpackHook
+@nix { "action": "setPhase", "phase": "patchPhase" }
+Running phase: patchPhase
+Executing cargoSetupPostPatchHook
+Validating consistency between /build/source/Cargo.lock and /build/cargo-vendor-dir/Cargo.lock
+Finished cargoSetupPostPatchHook
+@nix { "action": "setPhase", "phase": "updateAutotoolsGnuConfigScriptsPhase" }
+Running phase: updateAutotoolsGnuConfigScriptsPhase
+@nix { "action": "setPhase", "phase": "configurePhase" }
+Running phase: configurePhase
+@nix { "action": "setPhase", "phase": "buildPhase" }
+Running phase: buildPhase
+Executing cargoBuildHook
+++ env CC_X86_64_UNKNOWN_LINUX_GNU=/nix/store/4cjqvbp1jbkps185wl8qnbjpf8bdy8j9-gcc-wrapper-13.2.0/bin/cc CXX_X86_64_UNKNOWN_LINUX_GNU=/nix/store/4cjqvbp1jbkps185wl8qnbjpf8bdy8j9-gcc-wrapper-13.2.0/bin/c++ CARGO_TARGET_X86_64_UNKNOWN_LINUX_GNU_LINKER=/nix/store/4cjqvbp1jbkps185wl8qnbjpf8bdy8j9-gcc-wrapper-13.2.0/bin/cc CC_X86_64_UNKNOWN_LINUX_GNU=/nix/store/4cjqvbp1jbkps185wl8qnbjpf8bdy8j9-gcc-wrapper-13.2.0/bin/cc CXX_X86_64_UNKNOWN_LINUX_GNU=/nix/store/4cjqvbp1jbkps185wl8qnbjpf8bdy8j9-gcc-wrapper-13.2.0/bin/c++ CARGO_TARGET_X86_64_UNKNOWN_LINUX_GNU_LINKER=/nix/store/4cjqvbp1jbkps185wl8qnbjpf8bdy8j9-gcc-wrapper-13.2.0/bin/cc CARGO_BUILD_TARGET=x86_64-unknown-linux-gnu HOST_CC=/nix/store/4cjqvbp1jbkps185wl8qnbjpf8bdy8j9-gcc-wrapper-13.2.0/bin/cc HOST_CXX=/nix/store/4cjqvbp1jbkps185wl8qnbjpf8bdy8j9-gcc-wrapper-13.2.0/bin/c++ cargo build -j 16 --target x86_64-unknown-linux-gnu --frozen --profile release
+[1m[31merror[0m[1m:[0m the lock file /build/source/Cargo.lock needs to be updated but --frozen was passed to prevent this
+If you want to try to generate the lock file without accessing the network, remove the --frozen flag and use --offline instead.
