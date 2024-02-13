@@ -2,7 +2,7 @@
   description = "SunServer";
 
   inputs={
-    nixpkgs.url = "nixpkgs/23.05";
+    nixpkgs.url = "nixpkgs/nixpkgs-unstable";
   };
   
   outputs = {self, nixpkgs}: let
@@ -15,7 +15,7 @@
 
       buildInputs = [
         openssl
-        pkgconfig
+        pkg-config
         rustc
         cargo
         cargo-watch

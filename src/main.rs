@@ -1,10 +1,8 @@
-use axum::{
-    routing::get,
-    Router, Json, response::IntoResponse,
-};
-use chrono::{DateTime, Utc, Timelike, Datelike, Duration};
+use axum::{routing::get,Router, Json,};
+use chrono::{Utc, Timelike, Datelike, Duration};
 use clap::Parser;
 use serde_json::json;
+use serde_json::Value;
 
 #[cfg(test)]
 mod tests;
@@ -16,8 +14,8 @@ struct Time {
 }
 
 impl Time {
-    fn new(offset_hours: i32) -> Self {
-        let now = Utc::now() + Duration::hours(offset_hours.into());
+    fn new(offset:i32) -> Self {
+        let now = Utc::now() + Duration::hours(offset.into());
         Time {
             hour: now.hour(),
             minute: now.minute(),
@@ -43,54 +41,36 @@ impl Date {
     }
 }
 
-#[derive(Parser)]
-#[command(version = "1.0", about = "An Axum application with timezone offset handling", long_about = None)]
-struct Cli {
-    /// Offset for timezone adjustment in hours
-    #[arg(short, long)]
-    offset: i32,
-}
-
 #[tokio::main]
 async fn main() {
-    let cli = Cli::parse();
+    let offset = -5;
+    let date = Date::new(offset);
 
+    // Since we cannot directly use `date` inside the async closure due to the ownership issue,
+    // we adjust our approach to recompute or pass necessary data in a way that satisfies the ownership requirements.
     let app = Router::new()
-        .route("/", get(schedule(cli.offset)));
+        .route("/", get(select_curve(get_season(&date), is_dst(&date))));
 
-    let addr = "0.0.0.0:3000".parse().unwrap();
-    println!("Listening on {}", addr);
-    axum::Server::bind(&addr)
-        .serve(app.into_make_service())
-        .await
-        .unwrap();
+    // run our app with hyper, listening globally on port 3000
+    let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
+    axum::serve(listener, app).await.unwrap();
 }
 
-fn schedule(offset: i32) -> impl Fn() -> Json<Value> + Clone {
-    move || {
-        let date = Date::new(offset);
-        let season = get_season(&date);
-        let dst = is_dst(&date);
-        let curve = select_curve(&season, dst);
-        Json(curve)
-    }
-}
-
-fn get_season(date: &Date) -> String {
+fn get_season(date: &Date) -> &str {
     match date.month {
         12 | 1 | 2 => "winter",
         3 | 4 | 5 => "spring",
         6 | 7 | 8 => "summer",
         9 | 10 | 11 => "fall",
         _ => unreachable!(),
-    }.to_string()
+    }
 }
 
 fn is_dst(date: &Date) -> bool {
     (date.month > 3 && date.month < 11) || (date.month == 3 && date.day >= 14) || (date.month == 11 && date.day < 7)
 }
 
-fn select_curve(season: &str, is_dst: bool) -> Value {
+fn select_curve(season: &str, is_dst: bool) -> Json<Value> {
     // Example JSON for winter, implement similarly for other seasons
     let curve_json = match (season, is_dst) {
         ("winter", _) => json!({
@@ -139,7 +119,7 @@ fn select_curve(season: &str, is_dst: bool) -> Value {
         _ => json!({}),
     };
 
-    curve_json
+    Json(curve_json)
 }
 
 fn handle_timezone(time:Time, offset:i8) -> Time{
